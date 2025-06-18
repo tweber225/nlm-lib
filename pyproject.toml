@@ -1,0 +1,24 @@
+[build-system]
+requires = ["setuptools>=61.0", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "nlm-lib"
+version = "0.1.0"
+description = "Nonlinear microscopy of pathology specimens (NLM) specific code and resources."
+authors = [
+    {name = "T. D. Weber", email = "tweber@mit.edu"}
+]
+license = {text = "MIT"}
+dependencies = [
+    "dirigo"
+]
+
+# Provide additional color vectors and transfer functions to dirigo
+[project.entry-points."dirigo_color_vectors"]
+hematoxylin = "nlm_lib.color_vectors:Hematoxylin"
+eosin = "nlm_lib.color_vectors:Eosin"
+dab = "nlm_lib.color_vectors:DAB"
+
+[project.entry-points."dirigo_transfer_functions"]
+negative_exponential = "nlm_lib.transfer_functions:NegativeExponential"
