@@ -11,7 +11,8 @@ authors = [
 ]
 license = {text = "MIT"}
 dependencies = [
-    "dirigo"
+    "dirigo",
+    "pillow"
 ]
 
 # Provide additional color vectors and transfer functions to dirigo
@@ -22,3 +23,7 @@ dab = "nlm_lib.color_vectors:DAB"
 
 [project.entry-points."dirigo_transfer_functions"]
 negative_exponential = "nlm_lib.transfer_functions:NegativeExponential"
+
+# Custom logger for "snap" acquisitions
+[project.entry-points."dirigo_loggers"]
+png = "nlm_lib.loggers:PngLogger"
