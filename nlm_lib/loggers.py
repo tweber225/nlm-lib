@@ -10,6 +10,7 @@ from dirigo import units
 from dirigo.sw_interfaces.worker import EndOfStream
 from dirigo.sw_interfaces.display import Display, DisplayProduct
 from dirigo.sw_interfaces import Logger
+from dirigo.plugins.acquisitions import FrameAcquisition
 
 
 
@@ -22,6 +23,7 @@ class PngLogger(Logger):
                  rotate: units.Angle = units.Angle('0 deg'),
                  **kwargs):
         super().__init__(upstream, **kwargs) # type: ignore
+        self._acquisition: FrameAcquisition
 
         self._skip_frames = skip_frames
         self._rotate = rotate
@@ -71,8 +73,10 @@ class PngLogger(Logger):
     @property
     def _meta(self):
         meta = PngInfo()
-        meta.add_itxt("PixelSizeX", str(µm_per_pixel * 1e-6), lang="", tkey="MICROMETERS")
-        meta.add_itxt("PixelSizeY", str(µm_per_pixel * 1e-6), lang="", tkey="MICROMETERS")
+        if hasattr(self._acquisition.spec, 'pixel_size'):
+            pixel_size = float(self._acquisition.spec.pixel_size)
+            meta.add_itxt("PixelSizeX", str(pixel_size), lang="", tkey="MICROMETERS")
+            meta.add_itxt("PixelSizeY", str(pixel_size), lang="", tkey="MICROMETERS")
         # stage position
         # digital gain levels
         # channel labels
