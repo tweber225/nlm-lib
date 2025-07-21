@@ -19,7 +19,7 @@ class PngLogger(Logger):
 
     def __init__(self,
                  upstream: Display,
-                 skip_frames: int,
+                 skip_frames: int = 0,
                  rotate: units.Angle = units.Angle('0 deg'),
                  **kwargs):
         super().__init__(upstream, **kwargs) # type: ignore
@@ -45,10 +45,16 @@ class PngLogger(Logger):
         except EndOfStream:
             self._publish(None)
 
+        finally:
+            if self._processor is not None:
+                # Remove self as subscriber to upstream processor (can be a Display)
+                self._processor.remove_subscriber(self)
 
     def save_data(self, product: DisplayProduct):
         img = product.data.copy()
-        img = np.rot90(img, k = self._rotate_k, axes=(0,1))
+        img = np.rot90(img, 
+                       k    = -self._rotate_k,    # Negative to match CW rotation used by Qt
+                       axes = (0,1))
         
         height, width = img.shape[:2]
         bgrx_bytes = img.tobytes(order='C')   # bytes-like object, len == width * height * 4
@@ -59,12 +65,11 @@ class PngLogger(Logger):
                               "raw",           # use the raw decoder
                               "BGRX",          # how the *input* is organised
                               0, 1)            # stride 0 = tightly packed, 1 = top-to-bottom
-
-        img.save(fp = self._file_path(),
+        fp = self._file_path()
+        img.save(fp = fp,
                  pnginfo=self._meta,
                  dpi=(self._dpi, self._dpi))
-        
-        print("Saved frame")
+        self.last_saved_file_path = fp
 
     @property
     def _rotate_k(self) -> int:
