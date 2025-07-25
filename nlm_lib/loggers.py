@@ -1,7 +1,3 @@
-from typing import Optional
-from pathlib import Path
-import re
-
 from PIL import Image
 from PIL.PngImagePlugin import PngInfo
 import numpy as np
@@ -24,6 +20,8 @@ class PngLogger(Logger):
                  **kwargs):
         super().__init__(upstream, **kwargs) # type: ignore
         self._acquisition: FrameAcquisition
+
+        self.file_ext = "png"
 
         self._skip_frames = skip_frames
         self._rotate = rotate
@@ -92,35 +90,5 @@ class PngLogger(Logger):
     
     @property
     def _dpi(self) -> float:
-        return 1/1
+        return 1/1 # TODO fix this
     
-    def _file_path(self, image_index: Optional[int] = None) -> Path:
-        """
-        Build a PNG output path that never overwrites an existing file.
-
-        If ``image_index`` is None, scan ``self.save_path`` for files that already
-        match ``f"{self.basename}_<n>.png"`` and return the next free index.
-        If ``image_index`` is given, raise ``FileExistsError`` if that specific
-        file already exists.
-        """
-        # Regex that captures the numeric suffix of files like "<basename>_123.png"
-        pattern = re.compile(rf"{re.escape(self.basename)}_(\d+)\.png$")
-
-        if image_index is None:
-            # Collect any numeric suffixes on existing files
-            existing = [
-                int(m.group(1))
-                for p in self.save_path.glob(f"{self.basename}_*.png")
-                if (m := pattern.match(p.name))
-            ]
-
-            next_index = (max(existing) + 1) if existing else 0
-            proposed_file_path = self.save_path / f"{self.basename}_{next_index}.png"
-
-        else:
-            # check that we won't overwrite something
-            proposed_file_path = self.save_path / f"{self.basename}_{image_index}.png"
-            if proposed_file_path.exists():
-                raise FileExistsError(f"File already exists: {proposed_file_path}")
-
-        return proposed_file_path
