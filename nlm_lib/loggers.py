@@ -31,7 +31,7 @@ class PngLogger(Logger):
     def _receive_product(self) ->  DisplayProduct:
         return super()._receive_product(self) # type: ignore
 
-    def run(self):
+    def _work(self):
         try:
             while self._frames_received < self._skip_frames:
                 with self._receive_product():
